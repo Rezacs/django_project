@@ -1,0 +1,64 @@
+{% extends 'users/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="card mx-auto" style="width: 60rem;">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Survey for our subject!</h5>
+        <h3 class="card-title mb-3" style="color: red;">Attention! each student can only 1Time fill this form, not twice or more!</h3>
+        <form method="post">
+
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="exampleInputEmail1">Subject</label>
+                {% render_field form.subject class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Student Code : </label>
+                {% render_field form.student_code class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Student name : </label>
+                {% render_field form.student_name class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Teachers teaching : </label>
+                {% render_field form.teachers_teaching class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">teachers availability : </label>
+                {% render_field form.teachers_availability class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">question1 : </label>
+                {% render_field form.description1 class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">question2 : </label>
+                {% render_field form.description2 class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">question3 : </label>
+                {% render_field form.description3 class="form-control" %}
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">question4 : </label>
+                {% render_field form.description4 class="form-control" %}
+            </div>
+
+            <button class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}
+
+
+
+
+
+
+
+ 
+

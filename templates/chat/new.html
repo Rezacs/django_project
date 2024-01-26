@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="row" style="background-color: beige;">
+        <h1 class="col-md-12">
+            Conversation <span style="color: red;"><a href="{% url 'ticket-details' ticket.number %}">{{ ticket.title }}</a></span>
+        </h1>
+        <h4>
+            Ticket Status : {{ ticket.ticket_status }}
+        </h4>
+    </div>
+    <br>
+
+    <div class="row" style="background-color: beige;">
+        {% if chats %}
+            {% for chat in chats %}
+                {% if request.user == chat.user %}
+                <div class="col-md-4" style="border: solid rgb(30, 238, 117) 3px ;">
+                    <div>
+                        <p class="">
+                            <strong>
+                                {{ chat.user.username }}
+                            </strong> @ {{ chat.created_at }}
+                        </p>
+                        <p>
+                            {{ chat.content }}
+                        </p>
+                        <p>
+                            <button class="btn btn-danger">
+                                <a href="{% url 'chat:delete-chat' chat.pk %}">
+                                    Delete
+                                </a>
+                            </button>
+                        </p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-md-4" style="border: solid red 3px ;">
+                    <div>
+                        <p class="">
+                            <strong>
+                                <a href="{% url 'home' chat.user.username %}">{{ chat.user.username }}</a>
+                            </strong> @ {{ chat.created_at }} 
+                        </p>
+                        <p>
+                            {{ chat.content }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <h1>
+                No Messages to show!
+            </h1>
+        {% endif %}
+    </div>
+    <br>
+
+    {% if ticket.ticket_status != 'Completed' %}
+        <form action="." method="post" style="background-color: beige;">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-12">
+                    {{ form.as_p }}
+                    <button class="">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+
+{% endblock %}

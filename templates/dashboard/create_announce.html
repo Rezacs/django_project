@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+    <div class="row" style="background-color: aliceblue;">
+        <div class="col-md-12" >
+            <h1 style="color: rebeccapurple;">
+                Creating or editing Announcement or creating site solution or announcing a specified user
+            </h1>
+        </div>
+
+
+        <div class="col-md-12">
+            <div class="card mx-auto" >
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Create A Solution</h5>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

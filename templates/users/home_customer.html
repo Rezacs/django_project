@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+    <div class="row" style="text-align: center; border-bottom: solid red; background-color: aliceblue;">
+        <div class="col-md-6">
+            {% if user.image %}
+            <img src="{{ user.image.url }}" class="rounded-xl" />
+            {% else %}
+            <h1 style="color: red;">
+                No Profile Picture!
+            </h1>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1>
+                {{ user.username }}
+            </h1>
+            <br>
+            <h5>
+                contact info : {{ user.contact }}
+            </h5>
+            <br>
+            {% if user.is_customer %}
+                {% if request.user.is_engineer %}
+                <h5>
+                    site : {{user.site}}
+                </h5>
+                {% endif %}
+            {% endif %}
+            {% if request.user == user %}
+                <div class="row">
+                    <h3>
+                        <a href="{% url 'update-profile' %}">
+                            Edit your info
+                        </a>
+                    </h3>
+                </div>
+                <div class="row">
+                    <h3>
+                        <a href="{% url 'update-password' %}">
+                            Change password
+                        </a>
+                    </h3>
+                </div>
+            {% elif request.user.is_engineer and user.is_customer %} 
+                <div class="row">
+                    <div class="col-md-12">
+                        site : {{ user.site }}
+                    </div>
+                    <div class="col-md-12">
+                        <a href="{% url 'targeted-announcement' user.username %}" class="btn btn-outline-warning">Create new User Announcement</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+    {% if user.is_customer %}
+
+        <br>
+        <div class="row" style="text-align: center; border-bottom: solid red; background-color: aliceblue;">
+            <div class="col-md-12">
+                <h1 style="background-color: aliceblue;">
+                    Past Tickets :
+                </h1>
+            </div>
+        </div>
+        <div class="container mt-5">
+            <div class="card mx-auto" style="width: 76rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">All Tickets</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Ticket ID</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Created On</th>
+                                <th scope="col">Assigned To</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                                <th scope="col">Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in tickets %}
+                                <tr>
+                                    <td><small>{{ ticket.number }}</small></td>
+                                    <td><small>{{ ticket.title }}</small></td>
+                                    <td><small>{{ ticket.date_created }}</small></td>
+                                    {% if ticket.assigned_to %}
+                                        <td><small><a href="{% url 'home' ticket.assigned_to.username %}">{{ ticket.assigned_to }}</a></small></td>
+                                    {% else %}
+                                        <td><small>Not Assigned</small></td>
+                                    {% endif %}
+                                    {% if ticket.ticket_status == 'Active' %}
+                                        <td><span class="badge bg-success">Active</span></td>
+                                    {% elif ticket.ticket_status == 'Pending' %}
+                                        <td><span class="badge bg-warning">Pending</span></td>
+                                    {% elif ticket.ticket_status == 'Completed' %}
+                                        <td><span class="badge bg-danger">Completed</span></td>
+                                    {% endif %}
+                                        <td><small><a href="{% url 'ticket-details' ticket.number %}">View Details</a></small></td>
+                                    {% if ticket.category %}
+                                        <td><small><a href="{% url 'category' ticket.category.pk %}">{{ticket.category}}</a></small>
+                                    </td>
+                                    {% else %}
+                                    <td><small>No Category!</small></td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+    {% elif request.user.is_engineer %}
+        {% if request.user == user %}
+            <div class="row" style="background-color: aliceblue; text-align: center; border-bottom: solid red;">
+                <div class="col-md-12">
+                    <h1>
+                        Your friends : 
+                    </h1>
+                </div>
+                {% for friend in friends %}
+                    <div class="col-md-3" style="border: solid red;">
+                        <a href="{% url 'home' friend.username %}">
+                            {{friend}}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if solutions %}
+            <div class="row" style="background-color: aliceblue; text-align: center; border-bottom: solid red;">
+                <div class="col-md-12">
+                    <h1>
+                        This engineers solutions : 
+                    </h1>
+                </div>
+                {% for solution in solutions %}
+                    {% if solution.visible == True %}
+                        <div class="col-md-3" style="border: solid green;">
+                            <a href="{% url 'solution' solution.pk %}">
+                                {{solution.title}}
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="col-md-3" style="border: solid red;">
+                            <a href="{% url 'solution' solution.pk %}">
+                                {{solution.title}}
+                            </a>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+        <div class="row" style="background-color: aliceblue; text-align: center; border-bottom: solid red;">
+            <div class="col-md-12">
+                <h1 style="color: red;">
+                    No solutions yet
+                </h1>
+            </div>
+        </div>
+        {% endif %}
+        
+
+    {% endif %}
+
+
+{% endblock content %}

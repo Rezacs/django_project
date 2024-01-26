@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="row" style="background-color: beige;">
+        <h1 class="col-md-12">
+            Latest Conversations for <span style="color: red;"> {{request.user.username}} </span>
+        </h1>
+    </div>
+    <br>
+
+    <div class="row" style="background-color: beige;">
+        {% if chats %}
+            {% for chat in chats %}
+                {% if chat.ticket.is_resolved %}
+                <div class="col-md-4" style="border: solid rgb(15, 224, 137) 3px ;">
+                    <div>
+                        <p class="">
+                            <strong>
+                                <a href="{% url 'ticket-details' chat.ticket.number %}">
+                                    {{ chat.ticket }}
+                                </a>
+                            </strong>
+                            <strong>
+                                {{ chat.user.username }}
+                            </strong> @ {{ chat.created_at }}
+                        </p>
+                        <p>
+                            {{ chat.content }}
+                        </p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-md-4" style="border: solid red 3px ;">
+                    <div>
+                        <p class="">
+                            <strong>
+                                <a href="{% url 'ticket-details' chat.ticket.number %}">
+                                    {{ chat.ticket }}
+                                </a>
+                            </strong>
+                            <strong>
+                                {{ chat.user.username }}
+                            </strong> @ {{ chat.created_at }}
+                        </p>
+                        <p>
+                            {{ chat.content }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <h1>
+                No Messages to show!
+            </h1>
+        {% endif %}
+    </div>
+    <br>
+
+{% endblock %}

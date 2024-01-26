@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+    <div class="container mt-5">
+        <div class="card mx-auto" style="width: 76rem;">
+            <div class="card-body">
+                <h5 class="card-title mb-3">All Records</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Site</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Start</th>
+                            <th scope="col">End</th>
+                            <th scope="col">Verified ?</th>
+                            <th scope="col"></th>
+                            <th scope="col">Length</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                            <tr>
+                                <td><small>{{ record.site }}</small></td>
+                                <td><small>{{ record.date }}</small></td>
+                                <td><small>{{ record.start }}</small></td>
+                                <td><small>{{ record.end }}</small></td>
+                                {% if record.verified %}
+                                    <td><small style="color: green;">
+                                        Yes
+                                    </small></td>
+                                    <td></td>
+                                {% else %}
+                                    <td><small style="color: red;">
+                                        No
+                                    </small></td>
+                                    <td>
+                                        <a href="{% url 'time-delete' record.pk %}" class="btn btn-danger me-2">Delete record</a>
+                                    </td>
+                                {% endif %}
+                                
+                                <td><small>{{ record.length }}</small></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row" style="background-color:aliceblue;">
+        <div class="col-md-6">
+            Total minutes worked : {{ sum }}
+        </div>
+    </div>
+
+{% endblock content %}

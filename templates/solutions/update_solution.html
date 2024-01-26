@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+    <div >
+        <h1 style="color: rebeccapurple;">
+            Editing solution : <span>{{solution.title}}</span>
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mx-auto" style="width: 40rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Update solution</h5>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="exampleInputTitle">solution Title</label>
+                            {% render_field form.title class="form-control" %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputDescription" class="form-label">Description</label>
+                            {% render_field form.description class="form-control" %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputFile" class="form-label">File</label>
+                            {% render_field form.file class="form-control" %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Visible</label>
+                            {% render_field form.visible class="form-control" %}
+                        </div>
+                        <button class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
