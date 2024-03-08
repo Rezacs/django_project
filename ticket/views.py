@@ -120,9 +120,9 @@ def accept_ticket(request, slug):
         return HttpResponse('Not Enought Permission')
 
 @login_required
-def close_ticket(request, pk):
+def close_ticket(request, slug):
     if request.user.is_engineer :
-        ticket = Ticket.objects.get(pk=pk)
+        ticket = Ticket.objects.get(number=slug)
         ticket.ticket_status = 'Completed'
         ticket.solver = request.user
         ticket.is_resolved=True

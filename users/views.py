@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect ,get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate , login , logout
-from .form import RegisterCustomerForm , UpdateCustomerForm , UpdatePasswordForm
+from .form import RegisterCustomerForm , UpdateCustomerForm , UpdatePasswordForm , SetNewPasswordForm
 from .models import User
 from ticket.models import Ticket
 from django.contrib.auth.decorators import login_required
