@@ -82,6 +82,7 @@
                         {% if not ticket.is_resolved %}
                             <a href="{% url 'update-ticket' ticket.number %}" class="btn btn-primary">Update Ticket</a>
                             <a href="{% url 'delete-ticket' ticket.number %}" class="btn btn-danger">Delete Ticket</a>
+                            <a href="{% url 'gpt-ticket' ticket.category ticket.title ticket.description %}" class="btn btn-primary">See ChatGPT answer</a>
                         {% endif %}
                         <a href="{% url 'chat:ticket-chat' ticket.number %}" class="btn btn-primary">Chat about ticket</a>
                         {% if ticket.solution %}

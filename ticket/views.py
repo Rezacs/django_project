@@ -1,5 +1,7 @@
+import os
+import openai
 import datetime
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render,redirect, get_object_or_404
 from  django.contrib import messages
 from .models import Ticket
@@ -170,4 +172,34 @@ def delete_ticket (request , slug) :
         return redirect('all-tickets')
     else :
         return HttpResponse('Not Enought Permission')
+    
+
+OPENAI_API_KEY = os.getenv("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")  # Set this in your environment, never hardcode!
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
+
+
+@login_required
+def gpt_answer(request, category, title, description):
+    # Compose the prompt for the support assistant
+    prompt = (
+        f"You are a helpful IT support engineer. "
+        f"The ticket category is '{category}'.\n"
+        f"Ticket title: {title}\n"
+        f"Full description: {description}\n\n"
+        f"Please provide the most probable troubleshooting steps, solution, or reply to the user."
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",  # Or "gpt-4o" or "gpt-4", based on your key
+            messages=[
+                {"role": "system", "content": "You are a helpful IT support engineer for a managed IT services company."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        answer = response.choices[0].message.content
+        return JsonResponse({'response': answer})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 

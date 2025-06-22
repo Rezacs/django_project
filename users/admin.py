@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import User , Site
 
 class CustomUserAdmin(UserAdmin):
+    list_display = UserAdmin.list_display + ('is_customer', 'is_engineer', 'site')
     fieldsets = (
         *UserAdmin.fieldsets,
         (
