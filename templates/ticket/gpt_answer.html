@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container" style="color: aliceblue;">
+    <h2>AI Suggested Reply for Ticket</h2>
+    <p><strong>Category:</strong> {{ category }}</p>
+    <p><strong>Title:</strong> {{ title }}</p>
+    <p><strong>Description:</strong> {{ description }}</p>
+    <hr>
+    {% if answer %}
+      <div class="alert alert-info">
+        <strong>GPT Suggestion:</strong>
+        <p>{{ answer|linebreaks }}</p>
+      </div>
+    {% elif error %}
+      <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error }}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -10,6 +10,7 @@ from users.models import User
 from django.contrib.auth.decorators import login_required
 from solutions.models import Category
 from django.db.models import Q
+from django.views.decorators.http import require_POST
 
 @login_required
 def ticket_details(request , slug):
@@ -179,27 +180,59 @@ client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 
 @login_required
-def gpt_answer(request, category, title, description):
-    # Compose the prompt for the support assistant
+@require_POST
+def gpt_answer_api(request):
+    category = request.POST.get('category') or request.body.get('category')
+    title = request.POST.get('title') or request.body.get('title')
+    description = request.POST.get('description') or request.body.get('description')
+    number = request.POST.get('number')
+    user = request.POST.get('created_by')
+
+    # If using AJAX/JS, you'll likely send JSON: parse it
+    import json
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        category = data.get('category')
+        title = data.get('title')
+        description = data.get('description')
+        number = data.get('number')
+        user = data.get('user')
+    except Exception:
+        pass  # fallback to form-data
+
     prompt = (
         f"You are a helpful IT support engineer. "
         f"The ticket category is '{category}'.\n"
         f"Ticket title: {title}\n"
-        f"Full description: {description}\n\n"
+        f"Full description: {description}\n"
+        f"Number of ticket is : {number} \n"
+        f"Username who wrote ticket is : {user}\n\n"
         f"Please provide the most probable troubleshooting steps, solution, or reply to the user."
+        f"You should answer in a way that the user doesnt understand you are AI. they should think you are a human "
     )
 
+    answer = None
+    error = None
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",  # Or "gpt-4o" or "gpt-4", based on your key
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful IT support engineer for a managed IT services company."},
                 {"role": "user", "content": prompt}
             ]
         )
         answer = response.choices[0].message.content
-        return JsonResponse({'response': answer})
-
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        error = str(e)
+
+    context = {
+        'category': category,
+        'title': title,
+        'description': description,
+        'number': number,
+        'user': user,
+        'answer': answer,
+        'error': error,
+    }
+    return render(request, 'ticket/gpt_answer.html', context)
 

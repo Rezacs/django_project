@@ -14,5 +14,5 @@ urlpatterns = [
     path('remove-assignement/<slug:slug>/', views.remove_assignement , name='remove-assignement' ), 
     path('create-ticket/<int:pk>/', views.create_ticket_category , name='create-ticket-category' ),
     path('delete-ticket/<slug:slug>/', views.delete_ticket , name='delete-ticket' ),
-    path('gpt-ticket/<str:category>/<str:title>/<str:description>' , views.gpt_answer , name='gpt-ticket')
+    path('gpt-ticket/', views.gpt_answer_api, name='gpt-ticket-api'),
 ]
