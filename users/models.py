@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
 import string
 from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 
 def rand_slug():
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
@@ -31,6 +32,8 @@ class User(AbstractUser):
     ssites = models.ManyToManyField(Site, related_name='ssites')
     contact = models.CharField(max_length=200,null=True , blank=True)
     image = models.ImageField(upload_to='profilepics', blank=True , null=True)
+    phone_regex = RegexValidator(regex=r'^(\+\d{1,3})?,?\s?\d{8,13}', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone = models.CharField(validators=[phone_regex], max_length=17, null = True ,blank=True, unique = True) # validators should be a list
     def __str__(self) :
         return self.username
     

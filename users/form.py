@@ -11,7 +11,7 @@ class RegisterCustomerForm(UserCreationForm):
 class UpdateCustomerForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['image' , 'contact']
+        fields = ['image' , 'contact' , 'first_name' , 'last_name' , 'phone']
 
 class UpdatePasswordForm(forms.ModelForm):
     class Meta:
