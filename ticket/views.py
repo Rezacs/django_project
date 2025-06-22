@@ -174,7 +174,7 @@ def delete_ticket (request , slug) :
         return HttpResponse('Not Enought Permission')
     
 
-OPENAI_API_KEY = os.getenv("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")  # Set this in your environment, never hardcode!
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Set this in your environment, never hardcode!
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 
