@@ -47,5 +47,3 @@ This project is a comprehensive IT ticketing and customer support platform, buil
 - **Database:** PostgreSQL or SQLite (development)
 - **AI:** OpenAI GPT-4o via Python SDK
 - **Deployment:** Supports local development; production-ready with minor changes
-
-**Architecture Diagram:**  
