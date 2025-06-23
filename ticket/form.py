@@ -12,7 +12,13 @@ class ChatForm(forms.ModelForm):
 class CreateTicketForm(forms.ModelForm):
     class Meta:
         model = Ticket
-        fields = ['title', 'description' , 'category']
+        fields = ['title', 'description', 'category']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['title'].required = False
+        self.fields['category'].required = False
+
 
 
 class UpdateTicketForm(forms.ModelForm):

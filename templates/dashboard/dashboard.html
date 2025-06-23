@@ -4,115 +4,146 @@
 
 {% if request.user.is_customer %}
 
-<div class="row" style="background-color: aliceblue;">
-    <div class="col-md-12">
-        {% if site_announcements %}
-            <div class="row">
-                <div class="col-md-12">
-                    <h1 style="color: red;">
-                        Site Announcements : 
-                    </h1>
+<div class="container my-4 p-4 rounded" style="background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); box-shadow: 0 2px 16px #0001;">
+    <h2 class="mb-4 text-primary" style="font-family: 'Fira Mono', monospace;">
+        <i class="bi bi-megaphone-fill"></i> Announcements
+    </h2>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-danger mb-4 shadow">
+                <div class="card-header bg-danger text-white">
+                    <strong>Site Announcements</strong>
                 </div>
-                {% for az in site_announcements %}
-                    <div class="col-md-4" style="border: red;">
-                        <a href="{% url 'announcement' az.number %}">
-                            {{ az.title }} - {{ az.date_created }}
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <h1>No Site Announcements</h1>
-        {% endif %}
-        <br>
-        <hr>
-        <br>
-        {% if target_announcements %}
-            <div class="row">
-                <div class="col-md-12">
-                    <h1 style="color: red;">
-                        User Announcements : 
-                    </h1>
+                <div class="card-body">
+                    {% if site_announcements %}
+                        {% for az in site_announcements %}
+                            <div class="mb-2">
+                                <a href="{% url 'announcement' az.number %}" class="text-danger fw-bold">
+                                    {{ az.title }}
+                                </a>
+                                <span class="badge bg-light text-secondary ms-2">{{ az.date_created|date:"Y-m-d" }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted">No site announcements.</div>
+                    {% endif %}
                 </div>
-                {% for az in target_announcements %}
-                    <div class="col-md-4" style="border: red;">
-                        <a href="{% url 'announcement' az.number %}">
-                            {{ az.title }} - {{ az.date_created }}
-                        </a>
-                    </div>
-                {% endfor %}
             </div>
-        {% else %}
-            <h1>No Announcements for you specially</h1>
-        {% endif %}
+        </div>
+        <div class="col-md-6">
+            <div class="card border-info mb-4 shadow">
+                <div class="card-header bg-info text-white">
+                    <strong>User Announcements</strong>
+                </div>
+                <div class="card-body">
+                    {% if target_announcements %}
+                        {% for az in target_announcements %}
+                            <div class="mb-2">
+                                <a href="{% url 'announcement' az.number %}" class="text-info fw-bold">
+                                    {{ az.title }}
+                                </a>
+                                <span class="badge bg-light text-secondary ms-2">{{ az.date_created|date:"Y-m-d" }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted">No announcements for you specially.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-3">
-        Number of open Active tickets: {{ active_tickets.count }}
-    </div>
-    <div class="col-md-3">
-        Number of open Pending tickets: {{ pending_tickets.count }}
-    </div>
-    <div class="col-md-6" style="text-align: center;">
-        View your Tickets from button in header
+    <div class="row mt-2 text-center">
+        <div class="col-md-4 mb-2">
+            <div class="card border-success shadow">
+                <div class="card-body">
+                    <strong class="text-success">Open Active Tickets:</strong>
+                    <span class="fs-4 ms-2">{{ active_tickets.count }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-2">
+            <div class="card border-warning shadow">
+                <div class="card-body">
+                    <strong class="text-warning">Open Pending Tickets:</strong>
+                    <span class="fs-4 ms-2">{{ pending_tickets.count }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-2">
+            <div class="card border-primary shadow">
+                <div class="card-body">
+                    <span class="text-primary">View your tickets from the header menu!</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 {% elif request.user.is_engineer %}
 
-<section class="container mt-5">
-    <div class="p-5 mb-4 bg-light rounded-3">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold">Engineer Dashboard</h1>
-            <p class="col-md-8 fs-4">
-                You can make announcement to a site or specialy to a person
-            </p>
-            <button class="btn btn-danger btn-lg" type="button"> 
-                <a href="{% url 'create-announcement' %}">
-                    Create new Site Announcement
-                </a>
-            </button>
-            <button class="btn btn-outline-warning btn-lg" type="button"> 
-                <a href="{% url 'create-user-announcement' %}">
-                    Create new User Announcement
-                </a>
-            </button>
+<div class="container my-4">
+    <div class="p-4 mb-4 rounded shadow" style="background: linear-gradient(135deg, #fceabb 0%, #f8b500 100%);">
+        <h2 class="display-5 fw-bold text-dark" style="font-family: 'Fira Mono', monospace;">
+            Engineer Dashboard
+        </h2>
+        <p class="fs-5 text-dark mb-4">
+            You can make announcements to a site or specifically to a person.
+        </p>
+        <div class="mb-3">
+            <a href="{% url 'create-announcement' %}" class="btn btn-danger btn-lg me-2 shadow">
+                <i class="bi bi-megaphone"></i> Create Site Announcement
+            </a>
+            <a href="{% url 'create-user-announcement' %}" class="btn btn-outline-warning btn-lg shadow">
+                <i class="bi bi-person-badge"></i> Create User Announcement
+            </a>
         </div>
     </div>
-    <div class="row" style="background-color: aliceblue;">
-        <div class="col-md-12">
-            <h1 style="color: red;">Announcements in your site : </h1>
-        </div>
-        {% if site_announcements %}
-            {% for az in site_announcements %}
-                <div class="col-md-12">
-                    <a href="{% url 'announcement' az.number %}">
-                        {{ az.title }} - {{ az.date_created }}
-                    </a>
-                </div>
-            {% endfor %}
-        {% else %}
-                <h1 style="color: red;">No Announcements in your site!</h1>
-        {% endif %}
-        <br>
-        <hr>
-        <br>
-        <div class="col-md-12">
-            <h1 style="color: red;">Announcements you made : </h1>
-        </div>
-        {% if user_announcements %}
-            {% for az in user_announcements %}
-                <div class="col-md-12">
-                    <a href="{% url 'announcement' az.number %}">
-                        {{ az.title }} - {{ az.date_created }}
-                    </a>
-                </div>
-            {% endfor %}
-        {% else %}
-                <h1 style="color: red;">You have made no announces!</h1>
-        {% endif %}
-    </div>
-</section>
 
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white">
+                    <strong>Announcements in Your Site</strong>
+                </div>
+                <div class="card-body">
+                    {% if site_announcements %}
+                        {% for az in site_announcements %}
+                            <div class="mb-2">
+                                <a href="{% url 'announcement' az.number %}" class="text-danger fw-bold">
+                                    {{ az.title }}
+                                </a>
+                                <span class="badge bg-light text-secondary ms-2">{{ az.date_created|date:"Y-m-d" }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted">No announcements in your site!</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-primary shadow">
+                <div class="card-header bg-primary text-white">
+                    <strong>Your Announcements</strong>
+                </div>
+                <div class="card-body">
+                    {% if user_announcements %}
+                        {% for az in user_announcements %}
+                            <div class="mb-2">
+                                <a href="{% url 'announcement' az.number %}" class="text-primary fw-bold">
+                                    {{ az.title }}
+                                </a>
+                                <span class="badge bg-light text-secondary ms-2">{{ az.date_created|date:"Y-m-d" }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted">You have made no announcements!</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
 
 {% endblock %}

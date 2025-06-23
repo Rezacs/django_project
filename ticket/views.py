@@ -25,26 +25,34 @@ def ticket_details(request , slug):
     else :
         return HttpResponse('Not Enought Permission')
 
+
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Set this in your environment, never hardcode!
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
+
 """For Customers"""
 @login_required
 def create_ticket(request):
     if request.method == 'POST':
         form = CreateTicketForm(request.POST)
+        print("Form received. Is valid?", form.is_valid())
         if form.is_valid():
-            var = form.save(commit=False)
-            var.created_by = request.user
-            var.ticket_status = 'Pending'
-            var.site = request.user.site
-            
-            # Check if category or title is empty
-            if not var.category or not var.title:
-                # Prepare prompt for AI
+            cleaned = form.cleaned_data
+            title = cleaned.get('title')
+            description = cleaned.get('description')
+            category = cleaned.get('category')
+            print(f"User input -- Title: {title} | Category: {category} | Description: {description}")
+
+            # If title or category is missing, ask AI
+            if not title or not category:
                 prompt = (
                     f"You are a helpful IT support engineer. "
-                    f"The ticket description is: {var.description}\n"
+                    f"The ticket description is: {description}\n"
                     f"Please generate a concise and accurate ticket title and suggest an appropriate category name "
-                    f"based on this description."
+                    f"based on this description. "
+                    f"Output in this format:\nTitle: ...\nCategory: ..."
                 )
+                print("AI PROMPT:\n", prompt)
                 try:
                     response = client.chat.completions.create(
                         model="gpt-4o-mini",
@@ -54,46 +62,61 @@ def create_ticket(request):
                         ]
                     )
                     ai_answer = response.choices[0].message.content.strip()
-                    
-                    # Expect AI to respond with something like:
-                    # Title: <title>
-                    # Category: <category>
-                    # So parse the response accordingly
+                    print("AI RAW RESPONSE:", ai_answer)
                     lines = ai_answer.splitlines()
                     ai_title = None
                     ai_category_name = None
                     for line in lines:
+                        print("Parsing line:", line)
                         if line.lower().startswith("title:"):
                             ai_title = line.partition(":")[2].strip()
                         elif line.lower().startswith("category:"):
                             ai_category_name = line.partition(":")[2].strip()
-                    
-                    # Set title if missing
-                    if not var.title and ai_title:
-                        var.title = ai_title
-                    
-                    # Set category if missing
-                    if not var.category and ai_category_name:
-                        # Check if category exists, if not create it
-                        category_obj, created = Category.objects.get_or_create(name=ai_category_name)
-                        var.category = category_obj
-                        
+                    print(f"AI Parsed -- Title: {ai_title} | Category: {ai_category_name}")
+                    if not title and ai_title:
+                        title = ai_title
+                    if not category and ai_category_name:
+                        category_obj, created = Category.objects.get_or_create(title=ai_category_name)
+                        category = category_obj
                 except Exception as e:
+                    print("AI EXCEPTION:", e)
                     messages.warning(request, f"AI failed to generate title/category: {str(e)}")
-                    # Optionally handle fallback or continue with empty values
-            
+                    return redirect('create-ticket')
+
+            print(f"Final values -- Title: {title} | Category: {category}")
+
+            if not title:
+                print("Final error: Missing title.")
+                messages.warning(request, "A title is required, and AI could not generate one.")
+                return redirect('create-ticket')
+            if not category:
+                print("Final error: Missing category.")
+                messages.warning(request, "A category is required, and AI could not generate one.")
+                return redirect('create-ticket')
+
+            # Now create and save the ticket object
+            var = form.save(commit=False)
+            var.title = title
+            var.category = category
+            var.created_by = request.user
+            var.ticket_status = 'Pending'
+            var.site = request.user.site
             var.save()
+            print(f"Ticket saved: {var}")
             messages.info(request, "Your ticket has been successfully submitted. An engineer will be assigned soon!")
             return redirect('dashboard')
-        
+
         else:
-            messages.warning(request, "Something went wrong. Please check form input")
+            print("Form errors:", form.errors)
+            messages.warning(request, "Something went wrong. Please check form input.")
             return redirect('create-ticket')
-    
     else:
         form = CreateTicketForm()
         context = {'form': form}
         return render(request, 'ticket/create_ticket.html', context)
+
+
+
     
 @login_required
 def create_ticket_category(request , pk):
@@ -224,8 +247,6 @@ def delete_ticket (request , slug) :
         return HttpResponse('Not Enought Permission')
     
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Set this in your environment, never hardcode!
-client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 
 @login_required

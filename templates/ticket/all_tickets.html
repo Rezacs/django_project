@@ -3,12 +3,15 @@
 
 {% block content %}
 
-    <div class="container mt-5">
-        <div class="card mx-auto" style="width: 76rem;">
-            <div class="card-body">
-                <h5 class="card-title mb-3">All Tickets</h5>
-                <table class="table table-bordered">
-                    <thead>
+<div class="container my-5">
+    <div class="card shadow-lg mx-auto" style="max-width: 1100px; border-radius: 18px;">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4" style="color: #43156c; font-family: 'Fira Mono', monospace;">
+                <i class="bi bi-list-task"></i> All Tickets
+            </h2>
+            <div class="table-responsive rounded" style="background: linear-gradient(90deg,#fff7ef,#e0eafc 99%);">
+                <table class="table align-middle table-hover mb-0">
+                    <thead class="thead-dark">
                         <tr>
                             <th scope="col">Ticket ID</th>
                             <th scope="col">Title</th>
@@ -21,34 +24,45 @@
                     </thead>
                     <tbody>
                         {% for ticket in tickets %}
-                            <tr>
-                                <td><small>{{ ticket.number }}</small></td>
-                                <td><small>{{ ticket.title }}</small></td>
-                                <td><small>{{ ticket.date_created }}</small></td>
-                                {% if ticket.assigned_to %}
-                                    <td><small><a href="{% url 'home' ticket.assigned_to.username %}">{{ ticket.assigned_to }}</a></small></td>
-                                {% else %}
-                                    <td><small>Not Assigned</small></td>
-                                {% endif %}
-                                {% if ticket.ticket_status == 'Active' %}
-                                    <td><span class="badge bg-success">Active</span></td>
-                                {% elif ticket.ticket_status == 'Pending' %}
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                {% elif ticket.ticket_status == 'Completed' %}
-                                    <td><span class="badge bg-danger">Completed</span></td>
-                                {% endif %}
-                                <td><small><a href="{% url 'ticket-details' ticket.number %}">View Details</a></small></td>
-                                {% if ticket.category %}
-                                    <td><small><a href="{% url 'category' ticket.category.pk %}">{{ticket.category}}</a></small></td>
-                                {% else %}
-                                    <td><small>No Category!</small></td>
-                                {% endif %}
-                            </tr>
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ ticket.number }}</span></td>
+                            <td><span style="font-weight:500;">{{ ticket.title }}</span></td>
+                            <td><small>{{ ticket.date_created|date:"Y-m-d H:i" }}</small></td>
+                            {% if ticket.assigned_to %}
+                                <td><a href="{% url 'home' ticket.assigned_to.username %}" class="text-decoration-underline text-primary">{{ ticket.assigned_to }}</a></td>
+                            {% else %}
+                                <td><span class="text-muted">Not Assigned</span></td>
+                            {% endif %}
+                            {% if ticket.ticket_status == 'Active' %}
+                                <td><span class="badge bg-success px-3 py-2">Active</span></td>
+                            {% elif ticket.ticket_status == 'Pending' %}
+                                <td><span class="badge bg-warning text-dark px-3 py-2">Pending</span></td>
+                            {% elif ticket.ticket_status == 'Completed' %}
+                                <td><span class="badge bg-danger px-3 py-2">Completed</span></td>
+                            {% else %}
+                                <td><span class="badge bg-secondary px-3 py-2">Unknown</span></td>
+                            {% endif %}
+                            <td>
+                                <a href="{% url 'ticket-details' ticket.number %}" class="btn btn-outline-primary btn-sm">
+                                    View Details
+                                </a>
+                            </td>
+                            {% if ticket.category %}
+                                <td>
+                                    <a href="{% url 'category' ticket.category.pk %}" class="badge bg-info text-dark">
+                                        {{ ticket.category }}
+                                    </a>
+                                </td>
+                            {% else %}
+                                <td><span class="text-muted">No Category</span></td>
+                            {% endif %}
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+</div>
 
 {% endblock content %}

@@ -3,97 +3,105 @@
 
 {% block content %}
 
-<div class="row" style="background-color: aliceblue;">
-    <div class="col-md-6">
-        <h1 style="color:  red;" >{{category.title}}</h1>
-    </div>
-    <div class="col-md-6">
-        {% if category.parent %}
-            Parent : 
-            <a href="{% url 'category' category.parent.id %}">{{ category.parent }}</a>
-            <br>
-        {% endif %}
-    </div>
-</div>
+<div class="container my-5">
 
-{% if sub_categories %}
-    <div class="row" style="background-color: aliceblue;">
-        <div class="col-md-12">
-            <h2>Other sub categories for this item : </h2>
+    <!-- Category Title & Parent -->
+    <div class="card shadow mb-4 rounded-4 p-3" style="background: #faf9ff;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center">
+            <h1 class="text-danger fw-bold mb-0" style="font-family: 'Fira Mono', monospace;">{{ category.title }}</h1>
+            {% if category.parent %}
+                <span class="ms-3">
+                    <span class="text-muted">Parent:</span>
+                    <a href="{% url 'category' category.parent.id %}" class="badge bg-danger text-light rounded-pill px-3 py-2">{{ category.parent }}</a>
+                </span>
+            {% endif %}
         </div>
-        {% for category in sub_categories %}
-        <div class="col-md-3" style="border: solid red;">
-            <a href="{% url 'category' category.id %}">
-                {{category.title}}
-            </a>
-        </div>
-        {% endfor %}
     </div>
-    <br>
-{% endif %}
 
-<div class="row" style="background-color: aliceblue;">
-    <div class="col-md-12">
-        <h2>Solutions for this category : </h2>
+    <!-- Subcategories -->
+    {% if sub_categories %}
+    <div class="card shadow mb-4 rounded-4 p-3" style="background: #f1f9ff;">
+        <h4 class="mb-3 text-primary">Subcategories</h4>
+        <div class="row g-3">
+            {% for sub in sub_categories %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <a href="{% url 'category' sub.id %}" style="text-decoration: none;">
+                    <div class="card border-primary rounded-4 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-center" style="height: 70px;">
+                            <span class="fw-bold fs-5 text-primary">{{ sub.title }}</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-    {% for solution in solutions %}
-        {% if solution.visible == True %}
-            <div class="col-md-3" style="border: solid green;">
-                <a href="{% url 'solution' solution.pk %}">
-                    {{solution.title}}
+    {% endif %}
+
+    <!-- Solutions for Category -->
+    <div class="card shadow mb-4 rounded-4 p-3" style="background: #f7fff1;">
+        <h4 class="mb-3 text-success">Solutions for this Category</h4>
+        <div class="row g-3">
+            {% for solution in solutions %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <a href="{% url 'solution' solution.pk %}" style="text-decoration: none;">
+                    <div class="card rounded-4 shadow-sm h-100"
+                         style="border: 2px solid {% if solution.visible %}#28a745{% else %}#dc3545{% endif %}; background: {% if solution.visible %}#eaffec{% else %}#fff2f2{% endif %};">
+                        <div class="card-body d-flex align-items-center justify-content-center" style="height: 70px;">
+                            <span class="fw-bold fs-6" style="color: {% if solution.visible %}#28a745{% else %}#dc3545{% endif %};">
+                                {{ solution.title }}
+                            </span>
+                        </div>
+                    </div>
                 </a>
             </div>
-        {% else %}
-            <div class="col-md-3" style="border: solid red;">
-                <a href="{% url 'solution' solution.pk %}">
-                    {{solution.title}}
-                </a>
-            </div>
-        {% endif %}
-    {% endfor %}
-    <br>
-    <hr>
-    <br>
-    <div class="col-md-12">
-        <h2>Exclusive solution for <span style="color: red;">{{ request.user.site }} : </span></h2>
+            {% endfor %}
+        </div>
     </div>
-    {% if site_solutions %}
-        {% for solution in site_solutions %}
-            {% if solution.visible == True %}
-            <div class="col-md-3" style="border: solid green;">
-                <a href="{% url 'solution' solution.pk %}">
-                    {{solution.title}}
-                </a>
-            </div>
-            {% else %}
-                <div class="col-md-3" style="border: solid red;">
-                    <a href="{% url 'solution' solution.pk %}">
-                        {{solution.title}}
+
+    <!-- Site-Exclusive Solutions -->
+    <div class="card shadow mb-4 rounded-4 p-3" style="background: #fff9ec;">
+        <h4 class="mb-3 text-warning">Exclusive Solutions for <span class="text-danger">{{ request.user.site }}</span></h4>
+        <div class="row g-3">
+            {% if site_solutions %}
+                {% for solution in site_solutions %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <a href="{% url 'solution' solution.pk %}" style="text-decoration: none;">
+                        <div class="card rounded-4 shadow-sm h-100"
+                             style="border: 2px solid {% if solution.visible %}#28a745{% else %}#dc3545{% endif %}; background: {% if solution.visible %}#eaffec{% else %}#fff2f2{% endif %};">
+                            <div class="card-body d-flex align-items-center justify-content-center" style="height: 70px;">
+                                <span class="fw-bold fs-6" style="color: {% if solution.visible %}#28a745{% else %}#dc3545{% endif %};">
+                                    {{ solution.title }}
+                                </span>
+                            </div>
+                        </div>
                     </a>
                 </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <span class="text-muted">No exclusive solutions for your site yet.</span>
+                </div>
             {% endif %}
-        {% endfor %}
-    {% endif %}
-</div>
-<br>
+        </div>
+    </div>
 
-<div class="row" style="background-color: aliceblue;">
-    <div class="col-md-12">
+    <!-- Action Buttons -->
+    <div class="text-center mt-4">
         {% if request.user.is_customer %}
-        <a href="{% url 'create-ticket-category' category.pk %}">
-            Create a new ticket in this category
-        </a>
-        {% elif request.user.is_engineer  %}
-        <a href="{% url 'create-solution' category.pk %}">
-            Create a new solution in this category
-        </a>
-        <button class="btn btn-outline-warning btn-lg" type="button"> 
-            <a href="{% url 'create-site-solution' category.pk %}">
-                Create new Solution for your site in this category
+            <a href="{% url 'create-ticket-category' category.pk %}" class="btn btn-primary btn-lg rounded-pill px-4 me-2">
+                <i class="bi bi-plus-circle"></i> Create a new ticket in this category
             </a>
-        </button>
+        {% elif request.user.is_engineer %}
+            <a href="{% url 'create-solution' category.pk %}" class="btn btn-outline-success btn-lg rounded-pill px-4 me-2">
+                <i class="bi bi-tools"></i> Create a new solution
+            </a>
+            <a href="{% url 'create-site-solution' category.pk %}" class="btn btn-outline-warning btn-lg rounded-pill px-4">
+                <i class="bi bi-building"></i> Create new site solution
+            </a>
         {% endif %}
     </div>
+
 </div>
 
 {% endblock content %}
