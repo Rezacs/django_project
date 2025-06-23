@@ -2,52 +2,47 @@
 
 {% block content %}
   <div class="container" style="color: aliceblue;">
-    <h2>AI Suggested Reply for Ticket</h2>
+    <h2>AI Chat for Ticket</h2>
     <p><strong>Category:</strong> {{ category }}</p>
     <p><strong>Title:</strong> {{ title }}</p>
     <p><strong>Description:</strong> {{ description }}</p>
     <hr>
-    {% if answer %}
-      <div class="alert alert-info">
-        <strong>GPT Suggestion:</strong>
-        <p>{{ answer|linebreaks }}</p>
-      </div>
-    {% elif error %}
-      <div class="alert alert-danger">
-        <strong>Error:</strong> {{ error }}
-      </div>
-    {% endif %}
   </div>
 
-  <br>
-
-  <div class="row" style="background-color: beige; padding: 15px; border-radius: 8px;">
-    <h3 class="col-md-12">
-      Conversation <span style="color: red;">
-        <a href="{% url 'ticket-details' ticket %}">{{ ticket.title }}</a>
+  <div class="container my-4" style="background-color: #f7f7f7; border-radius: 10px; padding: 20px;">
+    <h3>
+      Conversation: <span style="color: #cc0000;">
+        <a href="{% url 'ticket-details' ticket.number %}" style="color: #cc0000;">{{ ticket.title }}</a>
       </span>
     </h3>
     <h5>
-      Ticket Status : {{ ticket.ticket_status }}
+      Ticket Status: {{ ticket.ticket_status }}
     </h5>
   </div>
-  <br>
 
-  <div class="row" style="background-color: beige; padding: 10px; border-radius: 8px;">
+  <div class="container" style="background: #e6e6e6; border-radius: 10px; padding: 24px;">
     {% if chats %}
       {% for chat in chats %}
-        {% if request.user == chat.user %}
-          <div class="col-md-4 offset-md-8" style="border: solid rgb(30, 238, 117) 3px; margin-bottom:10px; border-radius: 8px; padding:10px;">
-            <p><strong>{{ chat.user.username }}</strong> @ {{ chat.created_at }}</p>
-            <p>{{ chat.content }}</p>
-            <p>
-              <a href="{% url 'chat:delete-chat' chat.pk %}" class="btn btn-danger btn-sm">Delete</a>
-            </p>
+        {% if chat.is_gpt %}
+          <!-- AI Message (blue, left) -->
+          <div style="max-width: 80%; margin-bottom: 20px; background: #e3f0ff; border: 2.5px solid #4683f5; border-radius: 16px; padding: 16px; color: #163153;">
+            <strong>IT Engineer</strong> <span style="font-size: 0.9em; color: #668;">@ {{ chat.created_at|date:'Y-m-d H:i' }}</span>
+            <div style="margin-top: 8px;">{{ chat.content|linebreaks }}</div>
+          </div>
+        {% elif request.user == chat.user %}
+          <!-- Customer Message (green, right) -->
+          <div style="max-width: 80%; margin-bottom: 20px; margin-left: auto; background: #ecfff2; border: 2.5px solid #1ebe82; border-radius: 16px; padding: 16px; color: #1c2c20;">
+            <strong>You</strong> <span style="font-size: 0.9em; color: #668;">@ {{ chat.created_at|date:'Y-m-d H:i' }}</span>
+            <div style="margin-top: 8px;">{{ chat.content|linebreaks }}</div>
+            <div style="text-align: right;">
+              <a href="{% url 'chat:delete-chat' chat.pk %}" class="btn btn-danger btn-sm mt-2">Delete</a>
+            </div>
           </div>
         {% else %}
-          <div class="col-md-4" style="border: solid red 3px; margin-bottom:10px; border-radius: 8px; padding:10px;">
-            <p><strong><a href="{% url 'home' chat.user.username %}">{{ chat.user.username }}</a></strong> @ {{ chat.created_at }}</p>
-            <p>{{ chat.content }}</p>
+          <!-- Other user (red, left) just in case -->
+          <div style="max-width: 80%; margin-bottom: 20px; background: #ffe6e6; border: 2.5px solid #e13d3d; border-radius: 16px; padding: 16px; color: #502020;">
+            <strong>{{ chat.user.username }}</strong> <span style="font-size: 0.9em; color: #668;">@ {{ chat.created_at|date:'Y-m-d H:i' }}</span>
+            <div style="margin-top: 8px;">{{ chat.content|linebreaks }}</div>
           </div>
         {% endif %}
       {% endfor %}
@@ -58,16 +53,19 @@
   <br>
 
   {% if ticket.ticket_status != 'Completed' %}
-    <form action="." method="post" style="background-color: beige; padding: 15px; border-radius: 8px;">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="chatMessage"><strong>Write your message:</strong></label>
-        <textarea id="id_content" name="content" class="form-control" rows="4" placeholder="Type your message here..." required></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary mt-2">Send</button>
-    </form>
+    <div class="container" style="background: #f7f7f7; border-radius: 10px; padding: 18px;">
+      <form action="." method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="chatMessage"><strong>Write your message:</strong></label>
+          <textarea id="id_content" name="content" class="form-control" rows="4" placeholder="Type your message here..." required style="resize: vertical;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Send</button>
+      </form>
+    </div>
   {% else %}
-    <div class="alert alert-secondary">Ticket is completed. Chat is closed.</div>
+    <div class="alert alert-secondary mt-4">Ticket is completed. Chat is closed.</div>
   {% endif %}
 
+  <br>
 {% endblock %}

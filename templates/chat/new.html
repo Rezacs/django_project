@@ -1,75 +1,68 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container my-4" style="background-color: #f9f9e7; border-radius: 10px; padding: 20px;">
+    <h2>
+        Conversation: <span style="color: #b30000;">
+            <a href="{% url 'ticket-details' ticket.number %}">{{ ticket.title }}</a>
+        </span>
+    </h2>
+    <h5>
+        Ticket Status: {{ ticket.ticket_status }}
+    </h5>
+</div>
 
-    <div class="row" style="background-color: beige;">
-        <h1 class="col-md-12">
-            Conversation <span style="color: red;"><a href="{% url 'ticket-details' ticket.number %}">{{ ticket.title }}</a></span>
-        </h1>
-        <h4>
-            Ticket Status : {{ ticket.ticket_status }}
-        </h4>
-    </div>
-    <br>
-
-    <div class="row" style="background-color: beige;">
-        {% if chats %}
-            {% for chat in chats %}
-                {% if request.user == chat.user %}
-                <div class="col-md-4" style="border: solid rgb(30, 238, 117) 3px ;">
-                    <div>
-                        <p class="">
-                            <strong>
-                                {{ chat.user.username }}
-                            </strong> @ {{ chat.created_at }}
-                        </p>
-                        <p>
-                            {{ chat.content }}
-                        </p>
-                        <p>
-                            <button class="btn btn-danger">
-                                <a href="{% url 'chat:delete-chat' chat.pk %}">
-                                    Delete
-                                </a>
-                            </button>
-                        </p>
+<div class="container" style="background: #f6f3e8; border-radius: 10px; padding: 24px;">
+    {% if chats %}
+        {% for chat in chats %}
+            {% if chat.is_gpt %}
+                <!-- AI Message (blue border, left-aligned) -->
+                <div style="max-width: 90%; margin-bottom: 20px; background: #eaf3fc; border: 2px solid #368be1; border-radius: 16px; padding: 16px; color: #153157;">
+                    <strong>IT Engineer</strong>
+                    <span style="font-size: 0.9em; color: #668;">@ {{ chat.created_at|date:'Y-m-d H:i' }}</span>
+                    <div style="margin-top: 8px;">{{ chat.content|linebreaks }}</div>
+                </div>
+            {% elif request.user == chat.user %}
+                <!-- User's own message (green border, right-aligned) -->
+                <div style="max-width: 90%; margin-bottom: 20px; margin-left: auto; background: #ecfff2; border: 2px solid #28b26c; border-radius: 16px; padding: 16px; color: #1c2c20;">
+                    <strong>You</strong>
+                    <span style="font-size: 0.9em; color: #668;">@ {{ chat.created_at|date:'Y-m-d H:i' }}</span>
+                    <div style="margin-top: 8px;">{{ chat.content|linebreaks }}</div>
+                    <div style="text-align: right;">
+                        <a href="{% url 'chat:delete-chat' chat.pk %}" class="btn btn-danger btn-sm mt-2">
+                            Delete
+                        </a>
                     </div>
                 </div>
-                {% else %}
-                <div class="col-md-4" style="border: solid red 3px ;">
-                    <div>
-                        <p class="">
-                            <strong>
-                                <a href="{% url 'home' chat.user.username %}">{{ chat.user.username }}</a>
-                            </strong> @ {{ chat.created_at }} 
-                        </p>
-                        <p>
-                            {{ chat.content }}
-                        </p>
-                    </div>
+            {% else %}
+                <!-- Other user's message (red border, left-aligned) -->
+                <div style="max-width: 90%; margin-bottom: 20px; background: #ffeaea; border: 2px solid #e13636; border-radius: 16px; padding: 16px; color: #501b1b;">
+                    <strong>
+                        <a href="{% url 'home' chat.user.username %}">{{ chat.user.username }}</a>
+                    </strong>
+                    <span style="font-size: 0.9em; color: #668;">@ {{ chat.created_at|date:'Y-m-d H:i' }}</span>
+                    <div style="margin-top: 8px;">{{ chat.content|linebreaks }}</div>
                 </div>
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            <h1>
-                No Messages to show!
-            </h1>
-        {% endif %}
-    </div>
-    <br>
-
-    {% if ticket.ticket_status != 'Completed' %}
-        <form action="." method="post" style="background-color: beige;">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-12">
-                    {{ form.as_p }}
-                    <button class="">
-                        Send
-                    </button>
-                </div>
-            </div>
-        </form>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <h5>No Messages to show!</h5>
     {% endif %}
+</div>
+<br>
 
+{% if ticket.ticket_status != 'Completed' %}
+    <div class="container" style="background: #f9f9e7; border-radius: 10px; padding: 18px;">
+        <form action="." method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_content"><strong>Write your message:</strong></label>
+                <textarea id="id_content" name="content" class="form-control" rows="4" placeholder="Type your message here..." required style="resize: vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Send</button>
+        </form>
+    </div>
+{% else %}
+    <div class="alert alert-secondary mt-4">Ticket is completed. Chat is closed.</div>
+{% endif %}
 {% endblock %}
