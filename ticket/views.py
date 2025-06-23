@@ -35,16 +35,65 @@ def create_ticket(request):
             var.created_by = request.user
             var.ticket_status = 'Pending'
             var.site = request.user.site
+            
+            # Check if category or title is empty
+            if not var.category or not var.title:
+                # Prepare prompt for AI
+                prompt = (
+                    f"You are a helpful IT support engineer. "
+                    f"The ticket description is: {var.description}\n"
+                    f"Please generate a concise and accurate ticket title and suggest an appropriate category name "
+                    f"based on this description."
+                )
+                try:
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": "You are a helpful IT support engineer for a managed IT services company."},
+                            {"role": "user", "content": prompt}
+                        ]
+                    )
+                    ai_answer = response.choices[0].message.content.strip()
+                    
+                    # Expect AI to respond with something like:
+                    # Title: <title>
+                    # Category: <category>
+                    # So parse the response accordingly
+                    lines = ai_answer.splitlines()
+                    ai_title = None
+                    ai_category_name = None
+                    for line in lines:
+                        if line.lower().startswith("title:"):
+                            ai_title = line.partition(":")[2].strip()
+                        elif line.lower().startswith("category:"):
+                            ai_category_name = line.partition(":")[2].strip()
+                    
+                    # Set title if missing
+                    if not var.title and ai_title:
+                        var.title = ai_title
+                    
+                    # Set category if missing
+                    if not var.category and ai_category_name:
+                        # Check if category exists, if not create it
+                        category_obj, created = Category.objects.get_or_create(name=ai_category_name)
+                        var.category = category_obj
+                        
+                except Exception as e:
+                    messages.warning(request, f"AI failed to generate title/category: {str(e)}")
+                    # Optionally handle fallback or continue with empty values
+            
             var.save()
-            messages.info(request, 'Your ticket has been successfully submitted. An engineer would be assigned soon!')
+            messages.info(request, "Your ticket has been successfully submitted. An engineer will be assigned soon!")
             return redirect('dashboard')
+        
         else:
-            messages.warning(request, 'Something went wrong. Please check form input')
+            messages.warning(request, "Something went wrong. Please check form input")
             return redirect('create-ticket')
+    
     else:
         form = CreateTicketForm()
-        context = {'form':form}
-        return render(request, 'ticket/create_ticket.html' , context)
+        context = {'form': form}
+        return render(request, 'ticket/create_ticket.html', context)
     
 @login_required
 def create_ticket_category(request , pk):
@@ -187,6 +236,7 @@ def gpt_answer_api(request):
     description = request.POST.get('description') or request.body.get('description')
     number = request.POST.get('number')
     user = request.POST.get('created_by')
+    ticket = request.POST.get('ticket')
 
     # If using AJAX/JS, you'll likely send JSON: parse it
     import json
@@ -197,6 +247,7 @@ def gpt_answer_api(request):
         description = data.get('description')
         number = data.get('number')
         user = data.get('user')
+        ticket = data.get('ticket')
     except Exception:
         pass  # fallback to form-data
 
@@ -231,8 +282,107 @@ def gpt_answer_api(request):
         'description': description,
         'number': number,
         'user': user,
+        'ticket' : ticket,
         'answer': answer,
         'error': error,
     }
     return render(request, 'ticket/gpt_answer.html', context)
 
+@login_required
+def gpt_ticket_chat(request, slug):
+    ticket = get_object_or_404(Ticket, number=slug)
+    chats = Chat.objects.filter(ticket=ticket).order_by("created_at")
+
+    # Only allow the customer who created the ticket
+    if request.user != ticket.created_by:
+        return HttpResponse('Not enough permission')
+
+    # --- STEP 1: Initiate first GPT message if chat is empty ---
+    if not chats.exists():
+        prompt = (
+            f"You are a helpful IT support engineer. "
+            f"Ticket category: {ticket.category}\n"
+            f"Ticket title: {ticket.title}\n"
+            f"Full description: {ticket.description}\n\n"
+            f"You should answer in a way that the user doesn't realize you are an AI. Please answer naturally as a human IT engineer."
+        )
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": f"My issue: {ticket.description}"}
+                ],
+            )
+            gpt_reply = response.choices[0].message.content
+        except Exception as e:
+            gpt_reply = "Sorry, there was an error generating an initial reply. Please try again."
+
+        # Save GPT's first message
+        Chat.objects.create(
+            ticket=ticket,
+            user=request.user ,      # or a special AI user if you want
+            content=gpt_reply,
+            is_gpt=True
+        )
+        # Refresh chats queryset
+        chats = Chat.objects.filter(ticket=ticket).order_by("created_at")
+
+    # --- STEP 2: Handle user input and AI reply ---
+    if request.method == 'POST':
+        form = ChatForm(request.POST)
+        if form.is_valid():
+            # Save user message
+            user_message = form.save(commit=False)
+            user_message.ticket = ticket
+            user_message.user = request.user
+            user_message.is_gpt = False
+            user_message.save()
+
+            # Get full conversation for context (including new user message)
+            chats = Chat.objects.filter(ticket=ticket).order_by("created_at")
+            history = [{"role": "user" if not c.is_gpt else "assistant", "content": c.content} for c in chats]
+
+            prompt = (
+                f"You are a helpful IT support engineer. "
+                f"Ticket category: {ticket.category}\n"
+                f"Ticket title: {ticket.title}\n"
+                f"Full description: {ticket.description}\n\n"
+                f"You should answer in a way that the user doesn't realize you are an AI. Please answer naturally as a human IT engineer."
+            )
+
+            messages_for_gpt = [{"role": "system", "content": prompt}] + history
+
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=messages_for_gpt,
+                )
+                gpt_reply = response.choices[0].message.content
+            except Exception as e:
+                gpt_reply = "Sorry, there was an error generating a reply. Please try again."
+
+            # Save GPT reply
+            Chat.objects.create(
+                ticket=ticket,
+                user=request.user ,  # or your special AI user
+                content=gpt_reply,
+                is_gpt=True
+            )
+            messages.info(request, 'Your message was submitted!')
+            return redirect(request.path)  # Refresh for live effect
+    else:
+        form = ChatForm()
+
+    # Always re-fetch chats after any possible update
+    chats = Chat.objects.filter(ticket=ticket).order_by("created_at")
+
+    return render(request, 'ticket/gpt_answer.html', {
+        'form': form,
+        'chats': chats,
+        'ticket': ticket,
+        'category': ticket.category,
+        'title': ticket.title,
+        'description': ticket.description,
+    })

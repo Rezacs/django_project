@@ -18,4 +18,56 @@
       </div>
     {% endif %}
   </div>
+
+  <br>
+
+  <div class="row" style="background-color: beige; padding: 15px; border-radius: 8px;">
+    <h3 class="col-md-12">
+      Conversation <span style="color: red;">
+        <a href="{% url 'ticket-details' ticket %}">{{ ticket.title }}</a>
+      </span>
+    </h3>
+    <h5>
+      Ticket Status : {{ ticket.ticket_status }}
+    </h5>
+  </div>
+  <br>
+
+  <div class="row" style="background-color: beige; padding: 10px; border-radius: 8px;">
+    {% if chats %}
+      {% for chat in chats %}
+        {% if request.user == chat.user %}
+          <div class="col-md-4 offset-md-8" style="border: solid rgb(30, 238, 117) 3px; margin-bottom:10px; border-radius: 8px; padding:10px;">
+            <p><strong>{{ chat.user.username }}</strong> @ {{ chat.created_at }}</p>
+            <p>{{ chat.content }}</p>
+            <p>
+              <a href="{% url 'chat:delete-chat' chat.pk %}" class="btn btn-danger btn-sm">Delete</a>
+            </p>
+          </div>
+        {% else %}
+          <div class="col-md-4" style="border: solid red 3px; margin-bottom:10px; border-radius: 8px; padding:10px;">
+            <p><strong><a href="{% url 'home' chat.user.username %}">{{ chat.user.username }}</a></strong> @ {{ chat.created_at }}</p>
+            <p>{{ chat.content }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <h5>No Messages to show!</h5>
+    {% endif %}
+  </div>
+  <br>
+
+  {% if ticket.ticket_status != 'Completed' %}
+    <form action="." method="post" style="background-color: beige; padding: 15px; border-radius: 8px;">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="chatMessage"><strong>Write your message:</strong></label>
+        <textarea id="id_content" name="content" class="form-control" rows="4" placeholder="Type your message here..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary mt-2">Send</button>
+    </form>
+  {% else %}
+    <div class="alert alert-secondary">Ticket is completed. Chat is closed.</div>
+  {% endif %}
+
 {% endblock %}

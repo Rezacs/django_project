@@ -57,3 +57,4 @@ def delete_chat(request , pk):
         return redirect(f'/chat/ticket-chat/{chat.ticket.number}')
     else :
         return HttpResponse('Not Enought Permission')
+    

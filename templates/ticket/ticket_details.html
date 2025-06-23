@@ -82,12 +82,13 @@
                         {% if not ticket.is_resolved %}
                             <a href="{% url 'update-ticket' ticket.number %}" class="btn btn-primary">Update Ticket</a>
                             <a href="{% url 'delete-ticket' ticket.number %}" class="btn btn-danger">Delete Ticket</a>
-                            <form action="{% url 'gpt-ticket-api' %}" method="post" target="_blank">
+                            <form action="{% url 'gpt-ticket-api' ticket.number %}" method="post" target="_blank">
                                 {% csrf_token %}
                                 <input type="hidden" name="category" value="{{ ticket.category }}">
                                 <input type="hidden" name="title" value="{{ ticket.title }}">
                                 <input type="hidden" name="description" value="{{ ticket.description }}">
-                                <input type="hidden" name="description" value="{{ ticket.created_by }}">
+                                <input type="hidden" name="user" value="{{ ticket.created_by }}">
+                                <input type="hidden" name="ticket" value="{{ ticket.number }}">
                                 <button type="submit" class="btn btn-primary">See ChatGPT Answer</button>
                             </form>
 
